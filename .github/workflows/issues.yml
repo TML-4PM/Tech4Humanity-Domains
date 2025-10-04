@@ -1,0 +1,20 @@
+name: gaps-to-issues
+on:
+  push:
+    paths: [ "*/docs/CHECKLIST.json" ]
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open missing item issues
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          for f in */docs/CHECKLIST.json; do
+            jq -r 'to_entries[] | [.key, (.value|to_entries[] | select(.value==false) | .key)] | @tsv' "$f" |
+            while IFS=$'\t' read -r section key; do
+              title="[$f] Missing $section.$key"
+              gh issue create --title "$title" --body "Auto-detected incomplete checklist section"
+            done
+          done
