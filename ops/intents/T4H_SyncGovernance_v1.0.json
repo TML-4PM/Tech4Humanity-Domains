@@ -1,0 +1,56 @@
+{
+  "pack": "T4H_SyncGovernance_v1.0",
+  "principles": [
+    "Supabase is the control plane (source of truth).",
+    "GitHub folder path is canonical: groups/<group_folder>/<business_slug>/",
+    "Vercel Root Directory must equal github_path for each vercel_project.",
+    "All changes are additive; no destructive migrations."
+  ],
+  "entities": {
+    "groups_table": "public.mcp_infrastructure_groups",
+    "business_registry_table": "public.mcp_business_registry",
+    "repo_map_table": "public.t4h_repo_structure_map",
+    "audit_schema": "audit",
+    "audit_tables": [
+      "audit.sync_run",
+      "audit.sync_check_result",
+      "audit.sync_exception",
+      "audit.sync_metric_daily"
+    ],
+    "views": [
+      "audit.v_sync_current_state",
+      "audit.v_sync_drift",
+      "audit.v_sync_vercel_actions"
+    ]
+  },
+  "checks": [
+    { "id": "C01", "name": "Registry coverage", "severity": "BLOCKER" },
+    { "id": "C02", "name": "Vercel root-dir contract", "severity": "BLOCKER" },
+    { "id": "C03", "name": "Vercel project presence", "severity": "INFO" },
+    { "id": "C04", "name": "GitHub scaffold coverage (logical)", "severity": "WARN" }
+  ],
+  "writeback": {
+    "gated": true,
+    "allowed_tables": [
+      "audit.sync_run",
+      "audit.sync_check_result",
+      "audit.sync_metric_daily",
+      "audit.sync_exception"
+    ],
+    "forbidden_tables": [
+      "public.mcp_infrastructure_groups",
+      "public.mcp_business_registry",
+      "public.t4h_repo_structure_map"
+    ]
+  },
+  "dashboard": {
+    "name": "T4H Sync Governance",
+    "cadence": "daily",
+    "primary": [
+      "Drift count",
+      "Vercel actions list",
+      "Registry coverage",
+      "Exceptions"
+    ]
+  }
+}
